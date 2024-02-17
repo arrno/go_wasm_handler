@@ -1,0 +1,7 @@
+package main
+
+// <-- begin run -->
+func run() {}
+// <-- end run -->
+
+// end

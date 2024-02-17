@@ -1,0 +1,11 @@
+web handler gets post { program: string }
+web handler generates nanoid -> {nanoid}
+web handler creates local folder ./{nanoid} and copies ../wasm/* into it 
+defer folder deletion
+web handler injects/creates hosted.go
+cmd go fmt ./{nanoid}
+    if err -> response code 400
+cd ./nanoid -> sh compile.sh
+    if err -> response code 400
+web handler pushes main.wasm to gcp -> bucket/{nanoid}
+response 201 { wasm: https://{bucket}/{nanoid} }
