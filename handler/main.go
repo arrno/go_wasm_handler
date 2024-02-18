@@ -1,4 +1,4 @@
-package wasmhandler
+package main
 
 import (
 	"encoding/json"
@@ -7,8 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-
-	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 )
 
 type Request struct {
@@ -22,20 +20,38 @@ type ErrorResponse struct {
 }
 
 func init() {
-	dir, err := WorkingDir()
+	dir, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
 	}
-	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", dir+"/handler/keys/storage-admin.json")
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", dir+"/keys/storage-admin.json")
 	bucketWriter, err = NewBucketWriter()
 	if err != nil {
 		log.Fatal(err)
 	}
-	functions.HTTP("HandleWasm", ServeHTTP)
 }
 
-func ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func main() {
+	
+	log.Print("starting server...")
+	http.HandleFunc("/", handler)
 
+	// Determine port for HTTP service.
+	port := os.Getenv("PORT")
+	if port == "" {
+			port = "8080"
+			log.Printf("defaulting to port %s", port)
+	}
+
+	// Start HTTP server.
+	log.Printf("listening on port %s", port)
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+			log.Fatal(err)
+	}
+}
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	
 	// Closure for http response.
 	handleResponse := func(statusCode int, payload any, err error) {
 		if err != nil {

@@ -1,4 +1,4 @@
-package wasmhandler
+package main
 
 import (
 	"fmt"

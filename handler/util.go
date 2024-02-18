@@ -1,4 +1,4 @@
-package wasmhandler
+package main
 
 import (
 	"fmt"
@@ -25,11 +25,7 @@ func WorkingDir() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	path := strings.Split(dir, "/")
-	if len(path) == 1 {
-		return path[0], nil
-	}
-	return strings.Join(path[:len(path)-1], "/"), nil
+	return dir, nil
 }
 
 func NewNanoid() (string, error) {

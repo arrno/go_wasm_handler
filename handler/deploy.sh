@@ -1,8 +1,5 @@
-  gcloud functions deploy rebug-go-wasm \
-    --gen2 \
-    --runtime=go121 \
+  gcloud run deploy rebug-go-wasm \
     --region=us-east1 \
     --source=. \
-    --entry-point HandleWasm \
-    --trigger-http \
+    --service-account storage-admin@rebut-116bb.iam.gserviceaccount.com \
     --allow-unauthenticated
