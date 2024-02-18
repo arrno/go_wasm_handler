@@ -123,7 +123,7 @@ func NewProc(program string) (*Proc, error) {
 }
 
 func (p *Proc) Inject() error {
-	blob, err := os.ReadFile(fmt.Sprintf("%s/%s/%s/template.txt", p.workingDir, "handler", p.uid))
+	blob, err := os.ReadFile(fmt.Sprintf("%s/%s/%s/template.txt", p.workingDir, "temp", p.uid))
 	if err != nil {
 		return err
 	}
@@ -131,17 +131,17 @@ func (p *Proc) Inject() error {
 	begin := strings.Split(sblob, "// <-- begin run -->")[0]
 	end := strings.Split(sblob, "// <-- end run -->")[1]
 	injected := begin + strings.Replace(p.program, "func main() {", "func run() {", 1) + end
-	return os.WriteFile(fmt.Sprintf("%s/%s/%s/hosted.go", p.workingDir, "handler", p.uid), []byte(injected), 0644)
+	return os.WriteFile(fmt.Sprintf("%s/%s/%s/hosted.go", p.workingDir, "temp", p.uid), []byte(injected), 0644)
 }
 
 func (p *Proc) Compile() error {
 	cmd := exec.Command("go", "fmt", ".")
-	cmd.Dir = fmt.Sprintf("%s/%s/%s/", p.workingDir, "handler", p.uid)
+	cmd.Dir = fmt.Sprintf("%s/%s/%s/", p.workingDir, "temp", p.uid)
 	if _, err := cmd.Output(); err != nil {
 		return err
 	}
 	cmd = exec.Command("sh", "compile.sh")
-	cmd.Dir = fmt.Sprintf("%s/%s/%s/", p.workingDir, "handler", p.uid)
+	cmd.Dir = fmt.Sprintf("%s/%s/%s/", p.workingDir, "temp", p.uid)
 	if _, err := cmd.Output(); err != nil {
 		return err
 	}
@@ -149,7 +149,7 @@ func (p *Proc) Compile() error {
 }
 
 func (p *Proc) Upload() error {
-	blob, err := os.ReadFile(fmt.Sprintf("%s/%s/%s/main.wasm", p.workingDir, "handler", p.uid))
+	blob, err := os.ReadFile(fmt.Sprintf("%s/%s/%s/main.wasm", p.workingDir, "temp", p.uid))
 	if err != nil {
 		return err
 	}
@@ -158,19 +158,15 @@ func (p *Proc) Upload() error {
 
 // DO ALL
 func (p *Proc) DoProcess() (string, FaultCode, error) {
-	uid, err := NewNanoid()
-	if err != nil {
-		return "", ServerErr, err
-	}
 
-	if err := CopyDir(p.workingDir+"/wasm", p.workingDir+"/handler/"+uid); err != nil {
+	if err := CopyDir(p.workingDir+"/wasm", p.workingDir+"/temp/"+p.uid); err != nil {
 		return "", ServerErr, err
 	}
 
 	defer func() {
 		go func() {
-			if err := RemoveDir(p.workingDir + "/handler/" + uid); err != nil {
-				fmt.Println("Failed to delete " + uid + ". Err: " + err.Error())
+			if err := RemoveDir(p.workingDir + "/temp/" + p.uid); err != nil {
+				fmt.Println("Failed to delete " + p.uid + ". Err: " + err.Error())
 			}
 		}()
 	}()
@@ -187,5 +183,5 @@ func (p *Proc) DoProcess() (string, FaultCode, error) {
 		return "", ServerErr, err
 	}
 
-	return fmt.Sprintf("%s/%s", BUCKET_ROOT, uid), Clear, nil
+	return fmt.Sprintf("https://storage.googleapis.com/%s/%s/%s/main.wasm", BUCKET_ROOT, WASM_FOLDER, p.uid), Clear, nil
 }

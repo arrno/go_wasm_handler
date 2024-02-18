@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 )
@@ -21,7 +22,11 @@ type ErrorResponse struct {
 }
 
 func init() {
-	var err error
+	dir, err := WorkingDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", dir + "/keys/storage-admin.json")
 	bucketWriter, err = NewBucketWriter()
 	if err != nil {
 		log.Fatal(err)

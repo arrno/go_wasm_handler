@@ -1,6 +1,8 @@
 package wasmhandler
 
 import (
+	"fmt"
+
 	"cloud.google.com/go/storage"
 	"golang.org/x/net/context"
 )
@@ -34,7 +36,13 @@ func NewBucketWriter() (*BucketWriter, error) {
 }
 
 func (br *BucketWriter)WriteToBucket(file string, content []byte) error {
-    wc := br.cl.Bucket(br.bucket).Object(br.path + "/" + file).NewWriter(br.ctx)
+    wc := br.cl.Bucket(br.bucket).Object(fmt.Sprintf("%s/%s/main.wasm", br.path, file)).NewWriter(br.ctx)
+	defer func () {
+		err := wc.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
 	wc.ContentType = "application/wasm"
 	if _, err := wc.Write(content); err != nil {
 			return err
