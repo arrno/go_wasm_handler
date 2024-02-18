@@ -13,19 +13,18 @@ const (
 )
 
 type BucketWriter struct {
-	cl *storage.Client
-	ctx context.Context
+	cl     *storage.Client
+	ctx    context.Context
 	bucket string
-	path string
+	path   string
 }
 
 var bucketWriter *BucketWriter
 
-// "GOOGLE_APPLICATION_CREDENTIALS" ../keys/storage-admin.json
 func NewBucketWriter() (*BucketWriter, error) {
 	br := new(BucketWriter)
 	br.ctx = context.Background()
-    client, err := storage.NewClient(br.ctx)
+	client, err := storage.NewClient(br.ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -35,9 +34,9 @@ func NewBucketWriter() (*BucketWriter, error) {
 	return br, nil
 }
 
-func (br *BucketWriter)WriteToBucket(file string, content []byte) error {
-    wc := br.cl.Bucket(br.bucket).Object(fmt.Sprintf("%s/%s/main.wasm", br.path, file)).NewWriter(br.ctx)
-	defer func () {
+func (br *BucketWriter) WriteToBucket(file string, content []byte) error {
+	wc := br.cl.Bucket(br.bucket).Object(fmt.Sprintf("%s/%s/main.wasm", br.path, file)).NewWriter(br.ctx)
+	defer func() {
 		err := wc.Close()
 		if err != nil {
 			fmt.Println(err)
@@ -45,7 +44,7 @@ func (br *BucketWriter)WriteToBucket(file string, content []byte) error {
 	}()
 	wc.ContentType = "application/wasm"
 	if _, err := wc.Write(content); err != nil {
-			return err
+		return err
 	}
 	return nil
 }

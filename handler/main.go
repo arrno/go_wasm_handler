@@ -26,7 +26,7 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", dir + "/keys/storage-admin.json")
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", dir+"/handler/keys/storage-admin.json")
 	bucketWriter, err = NewBucketWriter()
 	if err != nil {
 		log.Fatal(err)
