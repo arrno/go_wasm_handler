@@ -35,6 +35,7 @@ func main() {
 	
 	log.Print("starting server...")
 	http.HandleFunc("/", handler)
+	http.HandleFunc("/ping", ping)
 
 	// Determine port for HTTP service.
 	port := os.Getenv("PORT")
@@ -48,6 +49,13 @@ func main() {
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 			log.Fatal(err)
 	}
+}
+
+func ping(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"Status": "Ok"})
+	return
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
