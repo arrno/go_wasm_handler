@@ -34,7 +34,7 @@ func init() {
 func main() {
 	
 	log.Print("starting server...")
-	http.HandleFunc("/", handler)
+	http.HandleFunc("/handlewasm", handler)
 	http.HandleFunc("/ping", ping)
 
 	// Determine port for HTTP service.
@@ -53,24 +53,38 @@ func main() {
 
 func ping(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	// CORS
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	w.Header().Set("Access-Control-Allow-Headers", "content-type")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"Status": "Ok"})
 	return
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	
 	// Closure for http response.
 	handleResponse := func(statusCode int, payload any, err error) {
 		if err != nil {
 			fmt.Println(err.Error())
 		}
+
+		// CORS
+		w.Header().Set("Access-Control-Allow-Methods", "POST")
+		w.Header().Set("Access-Control-Allow-Headers", "content-type")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(statusCode)
 		json.NewEncoder(w).Encode(payload)
 	}
 
-	if r.Method != http.MethodPost {
+	if r.Method == http.MethodOptions {
+		handleResponse(200, map[string]string{"Status": "Ok"}, nil)
+		return
+	} else if r.Method != http.MethodPost {
 		handleResponse(http.StatusMethodNotAllowed, ErrorResponse{Error: "Method not allowed."}, nil)
 		return
 	}
